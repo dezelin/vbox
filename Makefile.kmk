@@ -554,6 +554,10 @@ VBOX_CORE_DOXYFILE_INPUT_DIRS = \
 	src/VBox/Additions/freebsd/Installer \
 	src/VBox/Additions/freebsd/drm \
 	src/VBox/Additions/freebsd/vboxvfs \
+	src/VBox/Additions/netbsd \
+	src/VBox/Additions/netbsd/Installer \
+	src/VBox/Additions/netbsd/drm \
+	src/VBox/Additions/netbsd/vboxvfs \
 	src/VBox/Additions/linux \
 	src/VBox/Additions/linux/drm \
 	src/VBox/Additions/linux/installer \
@@ -733,7 +737,7 @@ VBOX_RSYNC_IN_FN = rsync -a -v --delete --delete-excluded --prune-empty-dirs \
 	--exclude=tinderclient.log \
 	--exclude=tools/FetchDir/ \
 	--exclude=webtools/ \
-	$(foreach os,darwin freebsd linux solaris os2 win,$(if-expr "$(1)" != "$(os)", \
+	$(foreach os,darwin netbsd freebsd linux solaris os2 win,$(if-expr "$(1)" != "$(os)", \
 		--exclude=tools/$(os).x86/ \
 		--exclude=tools/$(os).amd64/ \
 		--exclude=out/$(os).amd64/ \
@@ -757,6 +761,8 @@ VBOX_BLD_VM_WIN_X86_IP       := 192.168.27.6
 VBOX_BLD_VM_WIN_AMD64_IP     := 192.168.27.16
 VBOX_BLD_VM_FBSD_X86_IP      := 192.168.27.7
 VBOX_BLD_VM_FBSD_AMD64_IP    := 192.168.27.17
+VBOX_BLD_VM_NBSD_X86_IP	     := 192.168.27.8
+VBOX_BLD_VM_NBSD_AMD64_IP    := 192.168.27.18
 
 VBOX_WITH_OS2_ADD_BUILD=1
 
@@ -963,6 +969,8 @@ endif
 
 additions-packing:
 	+ $(KMK) VBOX_ONLY_ADDITIONS=1 \
+		VBOX_WITH_ADDITIONS_ISO.netbsd.amd64= \
+		VBOX_WITH_ADDITIONS_ISO.netbsd.x86= \
 		VBOX_WITH_ADDITIONS_ISO.freebsd.amd64= \
 		VBOX_WITH_ADDITIONS_ISO.freebsd.x86= \
 		VBOX_WITH_ADDITIONS_ISO.linux.amd64= \
@@ -1001,6 +1009,8 @@ extpacks-fetch:
 	+ $(KMK) -C tools fetch VBOX_ONLY_EXTPACKS=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=darwin  BUILD_TARGET_ARCH=amd64 BUILD_TARGET=darwin   VBOX_ONLY_EXTPACKS=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=darwin  BUILD_TARGET_ARCH=x86   BUILD_TARGET=darwin   VBOX_ONLY_EXTPACKS=1
+#	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=netbsd  BUILD_TARGET_ARCH=amd64 BUILD_TARGET=freebsd  VBOX_ONLY_EXTPACKS=1
+#	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=netbsd  BUILD_TARGET_ARCH=x86   BUILD_TARGET=freebsd  VBOX_ONLY_EXTPACKS=1
 #	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=freebsd BUILD_TARGET_ARCH=amd64 BUILD_TARGET=freebsd  VBOX_ONLY_EXTPACKS=1
 #	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=freebsd BUILD_TARGET_ARCH=x86   BUILD_TARGET=freebsd  VBOX_ONLY_EXTPACKS=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=linux   BUILD_TARGET_ARCH=amd64 BUILD_TARGET=linux    VBOX_ONLY_EXTPACKS=1
@@ -1022,6 +1032,8 @@ extpacks-build: \
 	extpacks-build-linux.x86 \
 	extpacks-build-darwin.amd64 \
 	extpacks-build-darwin.x86 \
+	extpacks-build-netbsd.amd64 \
+	extpacks-build-netbsd.x86
 	extpacks-build-freebsd.amd64 \
 	extpacks-build-freebsd.x86
 
@@ -1121,6 +1133,24 @@ else
 	$(call VBOX_BLD_VM_MSG_END__,Linux/x86 extension packs)
 endif
 
+extpacks-build-netbsd.amd64: $(VBOX_EXTPACKS_BUILD_WIN_HOST_FIRST)
+#ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),netbsd.amd64)
+#	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_EXTPACKS_BUILD.amd64) all $(VBOX_EXTPACKS_HOST_BUILD_TWEAK)
+#else
+#	$(call VBOX_BLD_VM_MSG_BEGIN,NetBSD/amd64 extension packs)
+#	$(VBOX_KMK_TIME) ssh vbox@$(VBOX_BLD_VM_NBSD_AMD64_IP) " echo $@ && cd /mnt/tinderbox/$(VBOX_EXTPACKS_BUILD_SUBDIRNAME) && tools/env.sh --no-wine kmk $(VBOX_EXTPACKS_BUILD.amd64) all"
+#	$(call VBOX_BLD_VM_MSG_END__,NetBSD/amd64 extension packs)
+#endif
+
+extpacks-build-netbsd.x86: $(VBOX_EXTPACKS_BUILD_WIN_HOST_FIRST)
+#ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),netbsd.x86)
+#	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_EXTPACKS_BUILD.x86) all $(VBOX_EXTPACKS_HOST_BUILD_TWEAK)
+#else
+#	$(call VBOX_BLD_VM_MSG_BEGIN,NetBSD/x86 extension packs)
+#	$(VBOX_KMK_TIME) ssh vbox@$(VBOX_BLD_VM_NBSD_X86_IP) " echo $@ && cd /mnt/tinderbox/$(VBOX_EXTPACKS_BUILD_SUBDIRNAME) && tools/env.sh --no-wine kmk $(VBOX_EXTPACKS_BUILD.x86) all"
+#	$(call VBOX_BLD_VM_MSG_END__,NetBSD/x86 extension packs)
+#endif
+
 extpacks-build-freebsd.amd64: $(VBOX_EXTPACKS_BUILD_WIN_HOST_FIRST)
 #ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),freebsd.amd64)
 #	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_EXTPACKS_BUILD.amd64) all $(VBOX_EXTPACKS_HOST_BUILD_TWEAK)
@@ -1166,7 +1196,7 @@ extpacks-packing:
 	+ $(KMK) VBOX_ONLY_EXTPACKS=1 \
 		VBOX_WITH_EXTPACK_OS_ARCHS="darwin.amd64 darwin.x86 linux.amd64 linux.x86 solaris.amd64 solaris.x86 win.amd64 win.x86" \
 		packing
-# +++ freebsd.amd64 freebsd.x86 os2.x86 ^^^
+# +++ netbsd.amd64 netbsd.x86 freebsd.amd64 freebsd.x86 os2.x86 ^^^
 
 .PHONY: \
 	extpacks-build-win.x86 \
@@ -1176,6 +1206,8 @@ extpacks-packing:
 	extpacks-build-os2.x86 \
 	extpacks-build-linux.amd64 \
 	extpacks-build-linux.x86 \
+	extpacks-build-netbsd.amd64 \
+	extpacks-build-netbsd.x86 \
 	extpacks-build-freebsd.amd64 \
 	extpacks-build-freebsd.x86 \
 	extpacks-build-darwin.amd64 \
@@ -1193,6 +1225,8 @@ testsuite-fetch:
 	+ $(KMK) -C tools fetch VBOX_ONLY_TESTSUITE=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=darwin  BUILD_TARGET_ARCH=amd64 BUILD_TARGET=darwin    VBOX_ONLY_TESTSUITE=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=darwin  BUILD_TARGET_ARCH=x86   BUILD_TARGET=darwin    VBOX_ONLY_TESTSUITE=1
+#	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=netbsd  BUILD_TARGET_ARCH=amd64 BUILD_TARGET=netbsd    VBOX_ONLY_TESTSUITE=1
+#	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=netbsd  BUILD_TARGET_ARCH=x86   BUILD_TARGET=netbsd    VBOX_ONLY_TESTSUITE=1
 #	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=freebsd BUILD_TARGET_ARCH=amd64 BUILD_TARGET=freebsd   VBOX_ONLY_TESTSUITE=1
 #	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=x86   KBUILD_TARGET=freebsd BUILD_TARGET_ARCH=x86   BUILD_TARGET=freebsd   VBOX_ONLY_TESTSUITE=1
 	+ $(KMK) -C tools fetch KBUILD_TARGET_ARCH=amd64 KBUILD_TARGET=linux   BUILD_TARGET_ARCH=amd64 BUILD_TARGET=linux     VBOX_ONLY_TESTSUITE=1
@@ -1212,6 +1246,8 @@ testsuite-build: \
 	testsuite-build-os2.x86 \
 	testsuite-build-linux.amd64 \
 	testsuite-build-linux.x86 \
+	testsuite-build-netbsd.amd64 \
+	testsuite-build-netbsd.x86 \
 	testsuite-build-freebsd.amd64 \
 	testsuite-build-freebsd.x86 \
 	testsuite-build-darwin.amd64 \
@@ -1313,6 +1349,24 @@ else
 	$(call VBOX_BLD_VM_MSG_END__,Linux/x86 testsuite)
 endif
 
+testsuite-build-netbsd.amd64:   $(VBOX_TESTSUITE_BUILD_WIN_HOST_FIRST)
+#ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),netbsd.amd64)
+#	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_TESTSUITE_BUILD.amd64) all $(VBOX_TESTSUITE_HOST_BUILD_TWEAK)
+#else
+#	$(call VBOX_BLD_VM_MSG_BEGIN,netbsd/amd64 testsuite)
+#	$(VBOX_KMK_TIME) ssh vbox@$(VBOX_BLD_VM_NBSD_AMD64_IP) " echo $@ && cd /mnt/tinderbox/$(VBOX_TESTSUITE_BUILD_SUBDIRNAME) && tools/env.sh --no-wine kmk $(VBOX_TESTSUITE_BUILD.amd64) all"
+#	$(call VBOX_BLD_VM_MSG_END__,netbsd/amd64 testsuite)
+#endif
+
+testsuite-build-netbsd.x86:   $(VBOX_TESTSUITE_BUILD_WIN_HOST_FIRST)
+#ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),netbsd.x86)
+#	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_TESTSUITE_BUILD.x86) all $(VBOX_TESTSUITE_HOST_BUILD_TWEAK)
+#else
+#	$(call VBOX_BLD_VM_MSG_BEGIN,netbsd/x86 testsuite)
+#	$(VBOX_KMK_TIME) ssh vbox@$(VBOX_BLD_VM_NBSD_X86_IP) " echo $@ && cd /mnt/tinderbox/$(VBOX_TESTSUITE_BUILD_SUBDIRNAME) && tools/env.sh --no-wine kmk $(VBOX_TESTSUITE_BUILD.x86) all"
+#	$(call VBOX_BLD_VM_MSG_END__,netbsd/x86 testsuite)
+#endif
+
 testsuite-build-freebsd.amd64:   $(VBOX_TESTSUITE_BUILD_WIN_HOST_FIRST)
 #ifeq ($(KBUILD_TARGET).$(KBUILD_TARGET_ARCH),freebsd.amd64)
 #	+ $(VBOX_KMK_TIME) $(KMK) $(VBOX_TESTSUITE_BUILD.amd64) all $(VBOX_TESTSUITE_HOST_BUILD_TWEAK)
@@ -1358,6 +1412,8 @@ testsuite-packing:
 	+ $(KMK) VBOX_ONLY_TESTSUITE=1 \
 		VBOX_WITH_TESTSUITE_PACKING.darwin.amd64=1 \
 		VBOX_WITH_TESTSUITE_PACKING.darwin.x86=2 \
+		VBOX_WITH_TESTSUITE_PACKING.netbsd.amd64= \
+		VBOX_WITH_TESTSUITE_PACKING.netbsd.x86= \
 		VBOX_WITH_TESTSUITE_PACKING.freebsd.amd64= \
 		VBOX_WITH_TESTSUITE_PACKING.freebsd.x86= \
 		VBOX_WITH_TESTSUITE_PACKING.linux.amd64=1 \
@@ -1378,6 +1434,8 @@ testsuite-packing:
 	testsuite-build-os2.x86 \
 	testsuite-build-linux.amd64 \
 	testsuite-build-linux.x86 \
+	testsuite-build-netbsd.amd64 \
+	testsuite-build-netbsd.x86 \
 	testsuite-build-freebsd.amd64 \
 	testsuite-build-freebsd.x86 \
 	testsuite-build-darwin.amd64 \

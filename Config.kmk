@@ -281,7 +281,7 @@ VBOX_PACKAGE_STRING = $(VBOX_PACKAGE_OS)_$(VBOX_PACKAGE_ARCH)_$(VBOX_PACKAGE_DIS
 # This indicates that additions (of some kind or another) is being _built_.
 # VBOX_WITHOUT_ADDITIONS overrides it.
 #if1of ($(KBUILD_TARGET), freebsd linux os2 solaris win)
-if1of ($(KBUILD_TARGET), freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), netbsd freebsd linux solaris win)
  VBOX_WITH_ADDITIONS = 1
 endif
 # Build the optional ring-0 part of the additions for syntax checking.
@@ -399,7 +399,7 @@ VBOX_WITH_INTERNAL_NETWORKING = 1
 # Enable Host Guest Shared Memory Interface.
 VBOX_WITH_HGSMI = 1
 # Enable Video 2D Acceleration.
-if1of ($(KBUILD_TARGET), darwin linux win freebsd)
+if1of ($(KBUILD_TARGET), darwin linux win netbsd freebsd)
  VBOX_WITH_VIDEOHWACCEL = 1
 endif
 # Enable Wddm Video driver for Vista+ guests.
@@ -469,7 +469,7 @@ VBOX_WITH_PXE_ROM = 1
 # Enable MSI support in devices
 VBOX_WITH_MSI_DEVICES = 1
 # Enable host network interface API.
-if1of ($(KBUILD_TARGET), darwin freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris win)
  VBOX_WITH_HOSTNETIF_API = 1
 endif
 # Emulated USB smart card reader
@@ -563,13 +563,13 @@ VBOX_WITH_GUEST_PROPS = 1
 # Enable this to prevent the guest from writing guest properties.
 VBOX_WITH_GUEST_PROPS_RDONLY_GUEST =
 # Enable the guest control service.
-if1of ($(KBUILD_TARGET), darwin freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris win)
  VBOX_WITH_GUEST_CONTROL = 1
 endif
 # Enable ballooning
 VBOX_WITH_MEMBALLOON = 1
 # Enable crOpenGL service
-if1of ($(KBUILD_TARGET), darwin freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris win)
  VBOX_WITH_CROGL = 1
 endif
 # Enable the VNC server extension pack (GPL only).
@@ -588,14 +588,14 @@ endif
 ## @name Networking
 ## @{
 # Use VBoxNetFlt for host interface networking.
-if1of ($(KBUILD_TARGET), darwin freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris win)
  VBOX_WITH_NETFLT = 1
  ifeq ($(KBUILD_TARGET),solaris)
   # requires snv_159+.
   VBOX_WITH_NETFLT_CROSSBOW = 1
  endif
  # Use VBoxNetAdp for host only networking.
- if1of ($(KBUILD_TARGET), darwin freebsd linux solaris) ## @todo this should be set and used on windows too.
+ if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris) ## @todo this should be set and used on windows too.
   VBOX_WITH_NETADP = 1
  endif
 endif
@@ -604,7 +604,7 @@ VBOX_WITH_UDPTUNNEL = 1
 # Enable the netshaper support
 VBOX_WITH_NETSHAPER = 1
 # Enable Virtual Distributed Ethernet or not.
-if1of ($(KBUILD_TARGET), freebsd linux)
+if1of ($(KBUILD_TARGET), netbsd freebsd linux)
  VBOX_WITH_VDE = 1
 endif
 ## @}
@@ -683,6 +683,8 @@ ifdef VBOX_WITH_HARDENING
   VBOX_PATH_APP_PRIVATE      = /opt/VirtualBox
  else ifeq ($(KBUILD_TARGET),darwin)
   VBOX_PATH_APP_PRIVATE      = /Applications/VirtualBox.app/Contents/MacOS
+ else ifeq ($(KBUILD_TARGET),netbsd)
+  VBOX_PATH_APP_PRIVATE      = /usr/local/lib/virtualbox
  else ifeq ($(KBUILD_TARGET),freebsd)
   VBOX_PATH_APP_PRIVATE      = /usr/local/lib/virtualbox
  endif
@@ -720,7 +722,7 @@ endif
 ifdef VBOX_WITH_HARDENING
  if1of ($(KBUILD_TARGET), solaris)
   VBOX_WITH_RUNPATH = $(VBOX_PATH_APP_PRIVATE)/$(if-expr $(KBUILD_TARGET_ARCH) == "amd64",amd64,i386)
- else if1of ($(KBUILD_TARGET), freebsd linux)
+ else if1of ($(KBUILD_TARGET), netbsd freebsd linux)
   VBOX_WITH_RUNPATH = $(VBOX_PATH_APP_PRIVATE)
  endif
 endif
@@ -768,7 +770,7 @@ VBOX_DO_STRIP_MODULES = 1
 ## For experimenting with disabling preemption instead of interrupts
 # when working VT-x/AMD-V in VMMR0.
 ## @todo os2? Reconsider perhaps windows? (see defect) This should be made the default.
-if1of ($(KBUILD_TARGET), darwin freebsd linux solaris win)
+if1of ($(KBUILD_TARGET), darwin netbsd freebsd linux solaris win)
  VBOX_WITH_VMMR0_DISABLE_PREEMPTION = 1
 endif
 # Mask all Local APIC interrupt vectors which are set up to NMI mode when switching
@@ -840,6 +842,10 @@ ifeq ($(KBUILD_TARGET),darwin)
  # Permanent (no working SDL).
  VBOX_WITH_VBOXSDL=
  VBOX_WITH_VBOXBFE=
+endif
+
+ifeq ($(KBUILD_TARGET),netbsd)
+ VBOX_WITH_DOCS=
 endif
 
 ifeq ($(KBUILD_TARGET),freebsd)
@@ -1398,6 +1404,7 @@ DEFS.strict  = RT_STRICT VBOX_STRICT
 DEFS.x86     = RT_ARCH_X86 __X86__
 DEFS.amd64   = RT_ARCH_AMD64 __AMD64__
 DEFS.darwin  = RT_OS_DARWIN __DARWIN__
+DEFS.netbsd =  RT_OS_NETBSD __NETBSD__
 DEFS.freebsd = RT_OS_FREEBSD __FREEBSD__
 DEFS.l4      = RT_OS_L4 __L4__ __L4ENV__ L4API_l4v2 ARCH_$(KBUILD_TARGET_ARCH) __NO_CTYPE _FILE_OFFSET_BITS=64
 DEFS.linux   = RT_OS_LINUX _FILE_OFFSET_BITS=64
@@ -1769,7 +1776,7 @@ VBOX_BIOSSUMS   ?= $(PATH_OBJ)/biossums/biossums$(HOSTSUFF_EXE)
 VBOX_MAKE_ALTERNATIVE_SOURCE ?= $(PATH_OBJ)/MakeAlternativeSource/MakeAlternativeSource$(HOSTSUFF_EXE)
 
 # GNU tar if present.
-if1of ($(KBUILD_TARGET), linux os2 win)
+if1of ($(KBUILD_TARGET), netbsd linux os2 win)
  VBOX_GTAR ?= tar
 else if1of ($(KBUILD_TARGET), freebsd solaris)
  VBOX_GTAR ?= gtar
@@ -2855,7 +2862,7 @@ ifdef VBOX_WITH_RAW_MODE
    TEMPLATE_VBoxRc_LDFLAGS          += $(if $(VBOX_DO_STRIP_MODULES),-S,)
    TEMPLATE_VBoxRc_LDFLAGS.release   = $(if $(VBOX_DO_STRIP_MODULES),-S,)
   endif
-  ifn1of ($(KBUILD_TARGET), solaris freebsd)
+  ifn1of ($(KBUILD_TARGET), solaris netbsd freebsd)
    TEMPLATE_VBoxRc_LIBS               = \
 	$(VBOX_GCC32_LIBGCC) # instricts
   endif
@@ -2990,7 +2997,7 @@ else
  TEMPLATE_VBoxR0_LDFLAGS           += $(if $(VBOX_DO_STRIP_MODULES),-S,)
  TEMPLATE_VBoxR0_LDFLAGS.release    = $(if $(VBOX_DO_STRIP_MODULES),-S,)
 endif
-ifn1of ($(KBUILD_TARGET),solaris freebsd)
+ifn1of ($(KBUILD_TARGET),solaris netbsd freebsd)
  TEMPLATE_VBoxR0_LIBS               = \
 	$(VBOX_GCC_LIBGCC) # instricts
 endif
@@ -3158,6 +3165,106 @@ TEMPLATE_VBOXR0DRV_CXXFLAGS           = -Wpointer-arith -Winline \
 TEMPLATE_VBOXR0DRV_CXXFLAGS.x86       = $(TEMPLATE_VBOXR0DRV_CFLAGS.x86)
 TEMPLATE_VBOXR0DRV_CXXFLAGS.amd64     = $(TEMPLATE_VBOXR0DRV_CFLAGS.amd64)
 endif # Solaris
+
+ifeq ($(KBUILD_TARGET),netbsd)
+# x86 NetBSD (6.0 or something):
+#  cc -O2 -fno-strict-aliasing -pipe -Werror -D_KERNEL -DKLD_MODULE \
+#   -nostdinc -I- -I. -I@ -I@/contrib/altq -I@/../include -I/usr/include \
+#   -finline-limit=8000 -fno-common -mno-align-long-strings -mpreferred-stack-boundary=2 \
+#   -mno-mmx -mno-3dnow -mno-sse -mno-sse2 -ffreestanding -Wall -Wredundant-decls -Wnested-externs \
+#   -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Winline -Wcast-qual -fformat-extensions \
+#   -std=c99 -c ../my.c
+#  ld -d -warn-common -r -d -o my.kld my.o
+#  :> export_syms
+#  awk -f /usr/src/sys/modules/my/../../conf/kmod_syms.awk my.kld export_syms | xargs -J% objcopy % my.kld
+#  ld -Bsharable -d warn-commnon -o my.ko my.kld
+#
+# AMD64 NetBSD (6.0):
+#  cc -O2 -fno-strict-aliasing -pipe -D_KERNEL -DKLD_MODULE -std=c99 -nostdinc -I. -I@ -I@/contrib/altq \
+#  -finline-limit=8000 --param inline-unit-growth=100 --param large-function-growth=1000 -fno-common  \
+#  -fno-omit-frame-pointer -mcmodel=kernel -mno-red-zone -mfpmath=387 -mno-sse -mno-sse2 -mno-mmx \
+#  -mno-3dnow -msoft-float -fno-asynchronous-unwind-tables -ffreestanding \
+#  -Wall -Wredundant-decls -Wnested-externs -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Winline -Wcast-qual -Wundef -Wno-pointer-sign \
+#  -fformat-extensions -c /usr/src/sys/modules/my/../../dev/my/if_my.c
+#  ld  -d -warn-common -r -d -o if_my.ko if_my.o
+#  :> export_syms
+#  awk -f /usr/src/sys/modules/my/../../conf/kmod_syms.awk if_my.ko  export_syms | xargs -J% objcopy % if_my.ko
+
+# Note: @ -> /usr/src/sys  and  machine -> /usr/src/sys/arch/amd64/include
+
+## The location of the NetBSD kernel source.
+VBOX_NETBSD_SRC ?= /usr/src/sys
+## The NetBSD /usr/include.
+VBOX_NETBSD_SYS_INCS ?= /usr/include
+
+TEMPLATE_VBOXR0DRV_TOOL                = $(VBOX_GCC_TOOL)
+TEMPLATE_VBOXR0DRV_LDTOOL              = NETBSDKMODLD
+TEMPLATE_VBOXR0DRV_DEFS               += _KERNEL KLD_MODULE
+TEMPLATE_VBOXR0DRV_INCS                = \
+	$(VBOX_NETBSD_SRC) \
+	$(VBOX_NETBSD_SRC)/altq \
+	$(VBOX_NETBSD_SRC)/../include \
+	$(VBOX_NETBSD_SYS_INCS)
+# omitting: -Wcast-qual, -Wredundant-decls
+TEMPLATE_VBOXR0DRV_CFLAGS              =  \
+	$(VBOX_GCC_WARN) -Wpointer-arith -Winline $(VBOX_GCC_Wno-pointer-sign) $(VBOX_GCC_fdiagnostics-show-option) \
+	-Wstrict-prototypes -Wmissing-prototypes -Wstrict-prototypes \
+	-Wimplicit-function-declaration -Werror-implicit-function-declaration \
+	-O2 -fformat-extensions -ffreestanding -fno-strict-aliasing -fno-common -finline-limit=8000 \
+	$(VBOX_GCC_fno-stack-protector) $(VBOX_GCC_R0_OPT) $(VBOX_GCC_R0_FP) \
+	-nostdinc -std=c99
+TEMPLATE_VBOXR0DRV_CFLAGS.x86          = -m32 -mno-align-long-strings -mpreferred-stack-boundary=2 -mno-mmx -mno-3dnow -mno-sse -mno-sse2
+TEMPLATE_VBOXR0DRV_CFLAGS.amd64        = -m64 --param inline-unit-growth=100 --param large-function-growth=1000 \
+	-fno-omit-frame-pointer -mcmodel=kernel -mno-red-zone -mfpmath=387 -mno-sse -mno-sse2 -mno-mmx \
+	-mno-3dnow -msoft-float -fno-asynchronous-unwind-tables -Wundef
+TEMPLATE_VBOXR0DRV_CXXFLAGS            = -fno-exceptions -fno-rtti \
+	$(VBOX_GCC_WARN) -Wpointer-arith -Winline \
+	-O2 -fno-format-extensions -fno-strict-aliasing -fno-common -finline-limit=8000 \
+	$(VBOX_GCC_fno-stack-protector) $(VBOX_GCC_R0_OPT) $(VBOX_GCC_R0_FP) \
+	-nostdinc
+TEMPLATE_VBOXR0DRV_CXXFLAGS.x86        = $(TEMPLATE_VBOXR0DRV_CFLAGS.x86)
+TEMPLATE_VBOXR0DRV_CXXFLAGS.amd64      = $(TEMPLATE_VBOXR0DRV_CFLAGS.amd64)
+TEMPLATE_VBOXR0DRV_SYSSUFF             = .ko
+TEMPLATE_VBOXR0DRV_LDFLAGS             = -d --warn-common
+TEMPLATE_VBOXR0DRV_LDFLAGS.x86         = -m elf_i386_fbsd
+TEMPLATE_VBOXR0DRV_LDFLAGS.amd64       = -m elf_x86_64_fbsd
+
+TOOL_NETBSDKMODLD = NetBSD kernel module linker.
+# See kBuild/tools/GCC3.kmk for docs.
+TOOL_NETBSDKMODLD_LINK_SYSMOD_OUTPUT_MAYBE = $(outbase).map
+TOOL_NETBSDKMODLD_LINK_SYSMOD_DEPEND = $(foreach lib,$(libs),$(if $(findstring $(lib),$(subst /,x,$(lib))),, $(lib)))
+TOOL_NETBSDKMODLD_LINK_SYSMOD_DEPORD =
+ ifeq ($(KBUILD_TARGET_ARCH),amd64)
+TOOL_NETBSDKMODLD_LINK_SYSMOD_OUTPUT =
+define TOOL_NETBSDKMODLD_LINK_SYSMOD_CMDS
+# Link intermediate .kld (a relocatable object).
+	ld $(flags) -r -o  $(out) $(objs) \
+		$(foreach p,$(libpath), -L$(p))\
+		$(foreach lib,$(libs), $(if $(findstring $(lib),$(subst /,x,$(lib))), -l$(patsubst lib%,%,$(basename $(lib))), $(lib)))
+# Strip non-exported symbols private and localize the exported ones.
+	awk -f $(VBOX_FREEBSD_SRC)/conf/kmod_syms.awk  $(out) $(if $(othersrc), $(othersrc),/dev/null) \
+		| xargs -J% objcopy % $(out)
+
+## Strip debug info (comment out if debugging or something).
+	objcopy --strip-debug $(out)
+endef
+ else # x86
+TOOL_NETBSDKMODLD_LINK_SYSMOD_OUTPUT = $(outbase).kld
+define TOOL_NETBSDKMODLD_LINK_SYSMOD_CMDS
+# Link intermediate .kld (a relocatable object).
+	ld $(flags) -r -o $(outbase).kld $(objs) \
+		$(foreach p,$(libpath), -L$(p))\
+		$(foreach lib,$(libs), $(if $(findstring $(lib),$(subst /,x,$(lib))), -l$(patsubst lib%,%,$(basename $(lib))), $(lib)))
+# Strip non-exported symbols private and localize the exported ones.
+	awk -f $(VBOX_NETBSD_SRC)/conf/kmod_syms.awk $(outbase).kld $(if $(othersrc), $(othersrc),/dev/null) \
+		| xargs -J% objcopy % $(outbase).kld
+
+# Link the final .ko (a shared object).
+	ld $(flags) -Bshareable -o $(out) $(outbase).kld
+endef
+ endif # x86
+
+endif # NetBSD
 
 ifeq ($(KBUILD_TARGET),freebsd)
 # x86 FreeBSD (6.2 or something):
@@ -4330,6 +4437,16 @@ ifdef VBOX_WITH_QTGUI
 	$(LIB_PTHREAD)
    TEMPLATE_VBOXQT4GUIEXE_LIBPATH += \
 	$(VBOX_LIBPATH_X11)
+   ifeq ($(KBUILD_TARGET),netbsd)
+    TEMPLATE_VBOXQT4GUIEXE_INCS += \
+	/usr/include \
+	/usr/X11R6/include \
+	/usr/local/include
+    TEMPLATE_VBOXQT4GUIEXE_LIBPATH += \
+	/usr/lib \
+	/usr/X11R6/lib \
+	/usr/local/lib
+   endif
    ifeq ($(KBUILD_TARGET),freebsd)
     TEMPLATE_VBOXQT4GUIEXE_INCS += \
 	/usr/include \
@@ -4556,6 +4673,11 @@ TEMPLATE_VBoxAdvBldProg_LIBS.darwin = \
 	$(TEMPLATE_VBOXBLDPROG_LIBS) \
 	iconv \
 	$(TEMPLATE_VBOXBLDPROG_LIBS.darwin)
+TEMPLATE_VBoxAdvBldProg_LIBS.netbsd = \
+	$(TEMPLATE_VBOXBLDPROG_LIBS) \
+	iconv \
+	rt \
+	$(TEMPLATE_VBOXBLDPROG_LIBS.netbsd)
 TEMPLATE_VBoxAdvBldProg_LIBS.freebsd = \
 	$(TEMPLATE_VBOXBLDPROG_LIBS) \
 	iconv \
@@ -4836,6 +4958,8 @@ TEMPLATE_VBOXGUESTR3XORGMOD_LIBS = \
 	$(VBOX_LIB_IPRT_GUEST_R3_MINI) \
 	$(VBOX_LIB_VBGL_R3_SHARED) \
 	$(VBOX_LIB_IPRT_GUEST_R3_MINI)
+TEMPLATE_VBOXGUESTR3XORGMOD_LIBS.netbsd += \
+	iconv
 TEMPLATE_VBOXGUESTR3XORGMOD_LIBS.freebsd += \
 	iconv
 
@@ -4885,6 +5009,7 @@ ifdef VBOX_WITH_COCOA_QT
 else
  TEMPLATE_VBOXCROGLR3HOSTDLL_LDFLAGS.darwin  = -framework Carbon
 endif
+TEMPLATE_VBOXCROGLR3HOSTDLL_DEFS.netbsd      = NetBSD=1 _GNU_SOURCE
 TEMPLATE_VBOXCROGLR3HOSTDLL_DEFS.freebsd     = FreeBSD=1 _GNU_SOURCE
 TEMPLATE_VBOXCROGLR3HOSTDLL_INCS             = $(VBOX_PATH_CROGL_INCLUDE) $(VBOX_PATH_CROGL_GENFILES)
 TEMPLATE_VBOXCROGLR3HOSTDLL_SDKS.darwin      = DARWIN-OPENGL
@@ -4919,6 +5044,7 @@ ifdef VBOX_WITH_COCOA_QT
 else
  TEMPLATE_VBOXCROGLR3GUESTDLL_LDFLAGS.darwin  = -framework Carbon
 endif
+TEMPLATE_VBOXCROGLR3GUESTDLL_DEFS.netbsd      = NetBSD=1 _GNU_SOURCE
 TEMPLATE_VBOXCROGLR3GUESTDLL_DEFS.freebsd     = FreeBSD=1 _GNU_SOURCE
 TEMPLATE_VBOXCROGLR3GUESTDLL_INCS             = $(VBOX_PATH_CROGL_INCLUDE) $(VBOX_PATH_CROGL_GENFILES)
 TEMPLATE_VBOXCROGLR3GUESTDLL_SDKS.darwin      = DARWIN-OPENGL
@@ -5314,5 +5440,3 @@ st stat status:
 
 quick:
 	$(MAKE) VBOX_QUICK=1
-
-
