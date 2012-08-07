@@ -49,6 +49,8 @@ case "$OS" in
     ;;
   darwin)
     ;;
+  netbsd)
+    ;;
   freebsd)
     ;;
   sunos)
