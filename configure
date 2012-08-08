@@ -137,6 +137,13 @@ if [ "$OS" = "freebsd" ]; then
   LIBPULSE="-L/usr/local/lib"
   INCPNG="-I/usr/local/include"
   LIBPNG="-L/usr/local/lib -lpng"
+elif [ "$OS" = "netbsd" ]; then
+  INCCURL="-I/usr/pkg/include"
+  LIBCURL="-L/usr/pkg/lib -lcurl"
+  INCPULSE="-I/usr/pkg/include"
+  LIBPULSE="-L/usr/pkg/lib"
+  INCPNG="-I/usr/pkg/include"
+  LIBPNG="-L/usr/pkg/lib -lpng15"
 else
   INCCURL=""
   LIBCURL="-lcurl"
@@ -567,6 +574,7 @@ check_open_watcom()
   case "$OS" in
     "darwin")   wc_bin="binosx";;  # ??
     "dos")      wc_bin="binw";;
+    "netbsd")   wc_bin="binnbsd";; # ??
     "freebsd")  wc_bin="binfbsd";; # ??
     "linux")    wc_bin="binl";;
     "solaris")  wc_bin="binsol";;  # ??
@@ -898,7 +906,7 @@ EOF
   [ -n "$INCZ" ] && I_INCZ=`prefix_I "$INCZ"`
   if test_compile "$LIBZ $I_INCZ" zlib zlib; then
     if test_execute; then
-      echo "if1of (\$(KBUILD_TARGET),darwin freebsd linux solaris)" >> $CNF
+      echo "if1of (\$(KBUILD_TARGET),darwin netbsd freebsd linux solaris)" >> $CNF
       cnf_append " SDK_VBOX_ZLIB_LIBS" "`strip_l "$LIBZ"`"
       cnf_append " SDK_VBOX_ZLIB_INCS" "$INCZ"
       echo "endif" >> $CNF
@@ -2183,7 +2191,7 @@ EOF
 [ $OSE          -eq 1 ] && echo "  --enable-vnc             enable the VNC server"
 [ $OSE          -eq 0 ] && echo "  --disable-extpack        don't build the extpack"
 [ $WITH_DOCS    -eq 1 ] && echo "  --disable-docs           don't build the documentation"
-[ "$OS" = "linux" -o "$OS" = "freebsd" ] && echo "  --enable-vde             enable VDE networking"
+[ "$OS" = "linux" -o "$OS" = "freebsd" -o "$OS" = "netbsd" ] && echo "  --enable-vde             enable VDE networking"
 cat << EOF
   --disable-udptunnel      disable UDP tunnel networking
   --disable-hardening      don't be strict about /dev/vboxdrv access
@@ -2583,7 +2591,7 @@ check_curl
 [ $WITH_JAVA   -eq 1 ] && check_java
 
 # PulseAudio
-if [ "$OS" = "linux" -o "$OS" = "freebsd" ]; then
+if [ "$OS" = "linux" -o "$OS" = "freebsd" -o "$OS" = "netbsd" ]; then
   if [ $WITH_PULSE -eq 1 ]; then
     check_pulse
   elif [ $WITH_PULSE -eq 0 ]; then
@@ -2634,7 +2642,7 @@ if [ $WITH_UDPTUNNEL -eq 0 ]; then
 fi
 
 # VDE
-if [ "$OS" = "linux" -o "$OS" = "freebsd" ]; then
+if [ "$OS" = "linux" -o "$OS" = "freebsd" -o "$OS" = "netbsd" ]; then
   if [ $WITH_VDE -eq 1 ]; then
     cnf_append "VBOX_WITH_VDE" "1"
   fi
