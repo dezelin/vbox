@@ -144,6 +144,8 @@ elif [ "$OS" = "netbsd" ]; then
   LIBPULSE="-L/usr/pkg/lib"
   INCPNG="-I/usr/pkg/include"
   LIBPNG="-L/usr/pkg/lib -lpng15"
+  INCX11="/usr/X11R7/include"
+  LIBX11="-L/usr/X11R7/lib -L/usr/X11R7/lib64 -L/usr/local/lib -lXext -lX11"
 else
   INCCURL=""
   LIBCURL="-lcurl"
@@ -151,7 +153,11 @@ else
   LIBPNG="-lpng"
 fi
 PKGCONFIG="`which_wrapper pkg-config`"
-PYTHONDIR="/usr /usr/local"
+if [ "$OS" = "netbsd" ]; then
+    PYTHONDIR="/usr/pkg"
+else
+    PYTHONDIR="/usr /usr/local"
+fi
 QT4DIR="/usr/lib/qt4 /usr/share/qt4 /usr/lib64/qt4 /usr /usr/local"
 QT4DIR_PKGCONFIG=1
 QT4UIC3DIR="/usr/bin"
